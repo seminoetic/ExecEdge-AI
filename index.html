@@ -689,13 +689,26 @@ async function loadCloudData() {
       'agent7_impactBrief':'agent7_impactBrief',
       'agent7_boardBio':'agent7_boardBio',
       'agent7_recruiterResume':'agent7_recruiterResume',
-      'agent7_networkingIntro':'agent7_networkingIntro'
+      'agent7_networkingIntro':'agent7_networkingIntro',
+      // Agent 9 on-demand documents
+      'agent9_coverLetter':'agent9_coverLetter',
+      'agent9_impactBrief':'agent9_impactBrief',
+      'agent9_jobFitAnalysis':'agent9_jobFitAnalysis',
+      'agent9_thankYou':'agent9_thankYou',
+      'agent9_leaveBehind':'agent9_leaveBehind',
+      'agent9_rejectionRecovery':'agent9_rejectionRecovery'
     };
     // Also restore input fields saved as dedicated keys
     var inputKeyMap = {
       'input_resume':'0_resume',
       'input_targetrole':'0_targetrole',
-      'input_selfassess':'0_selfassess'
+      'input_selfassess':'0_selfassess',
+      'a9_ctx_coverLetter':'2_doc_coverLetter',
+      'a9_ctx_impactBrief':'2_doc_impactBrief',
+      'a9_ctx_jobFitAnalysis':'2_doc_jobFitAnalysis',
+      'a9_ctx_thankYou':'2_doc_thankYou',
+      'a9_ctx_leaveBehind':'2_doc_leaveBehind',
+      'a9_ctx_rejectionRecovery':'2_doc_rejectionRecovery'
     };
     if (Array.isArray(rows)) {
       rows.forEach(function(row){
@@ -743,6 +756,16 @@ async function loadCloudData() {
         if (a7Keys[row.data_key]) {
           if (!STATE.agent7Docs) STATE.agent7Docs = {evp:'',impactBrief:'',boardBio:'',recruiterResume:'',networkingIntro:''};
           if (!STATE.agent7Docs[a7Keys[row.data_key]]) STATE.agent7Docs[a7Keys[row.data_key]] = row.data_value;
+        }
+        // Restore agent9 on-demand docs
+        var a9Keys = {
+          'agent9_coverLetter':'coverLetter','agent9_impactBrief':'impactBrief',
+          'agent9_jobFitAnalysis':'jobFitAnalysis','agent9_thankYou':'thankYou',
+          'agent9_leaveBehind':'leaveBehind','agent9_rejectionRecovery':'rejectionRecovery'
+        };
+        if (a9Keys[row.data_key]) {
+          if (!STATE.agent9Docs) STATE.agent9Docs = {};
+          if (!STATE.agent9Docs[a9Keys[row.data_key]]) STATE.agent9Docs[a9Keys[row.data_key]] = row.data_value;
         }
         if (row.data_key.indexOf('inputs_') === 0) {
           var ia=row.data_key.slice(7), iv=safeJsonParse(row.data_value,{}); STATE.savedInputs=Object.assign(STATE.savedInputs||{},iv);
@@ -2597,6 +2620,12 @@ function renderAgentBody(id, ag) {
     var adDiv = document.createElement('div');
     adDiv.innerHTML = renderAgent7DocPanel();
     body.appendChild(adDiv.firstChild);
+  }
+  // Append on-demand document panel if Agent 9 (Demand Creation & Outreach) is complete
+  if (id === '2' && STATE.savedOutputs && STATE.savedOutputs['2']) {
+    var a9Div = document.createElement('div');
+    a9Div.innerHTML = renderAgent9DocPanel();
+    body.appendChild(a9Div.firstChild);
   }
 }
 
@@ -7454,27 +7483,27 @@ async function autoGenerateAgent7Docs(marketIntelOutput) {
     {
       key: 'evp',
       label: 'Executive Value Proposition',
-      prompt: 'Based on the following Market Intelligence & Positioning output, write a crisp one-page Executive Value Proposition document.\n\nTarget Role: ' + targetRole + '\nTransformation Themes: ' + transformation + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat:\nHEADER: Name placeholder + Target Role\nOPENING STATEMENT (3-4 sentences): The most compelling version of this executive\'s value.\nCORE VALUE DRIVERS (3 bullets): Each with a quantified outcome.\nINDUSTRY FIT: 2-3 sentences on sector-specific fit.\nKEY WINS (3 bullets): Strongest proof points.\nCLOSING CALL TO ACTION: One sentence.\n\nWrite as a peer-level document, not a resume.'
+      prompt: 'Based on the following Market Intelligence & Positioning output, write a crisp one-page Executive Value Proposition document.\n\nTarget Role: ' + targetRole + '\nTransformation Themes: ' + transformation + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat:\nHEADER: Name placeholder + Target Role\nOPENING STATEMENT (3-4 sentences): The most compelling version of this executive\'s value.\nCORE VALUE DRIVERS (3 bullets): Each with a quantified outcome.\nINDUSTRY FIT: 2-3 sentences on sector-specific fit.\nKEY WINS (3 bullets): Strongest proof points.\nCLOSING CALL TO ACTION: One sentence.\n\nWrite as a peer-level document, not a resume.' + AI_VOICE_GUARDRAIL
     },
     {
       key: 'impactBrief',
       label: 'Impact Brief',
-      prompt: 'Based on the following Market Intelligence & Positioning output, write a two-page Executive Impact Brief.\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat:\nTITLE: [Name] — Executive Impact Brief\nSECTION 1 — THE EXECUTIVE (5-6 sentences): Compelling professional summary.\nSECTION 2 — TRANSFORMATION RECORD (4-5 bullets): Quantified results from most recent roles.\nSECTION 3 — WHAT I BUILD (3 bullets): Specific organizational capabilities created.\nSECTION 4 — WHERE I ADD THE MOST VALUE: 3 paragraphs on the business problems this executive solves.\nSECTION 5 — SELECTED RESULTS: 5 quantified accomplishments.\n\nWrite at C-suite peer level. No resume language.'
+      prompt: 'Based on the following Market Intelligence & Positioning output, write a two-page Executive Impact Brief.\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat:\nTITLE: [Name] — Executive Impact Brief\nSECTION 1 — THE EXECUTIVE (5-6 sentences): Compelling professional summary.\nSECTION 2 — TRANSFORMATION RECORD (4-5 bullets): Quantified results from most recent roles.\nSECTION 3 — WHAT I BUILD (3 bullets): Specific organizational capabilities created.\nSECTION 4 — WHERE I ADD THE MOST VALUE: 3 paragraphs on the business problems this executive solves.\nSECTION 5 — SELECTED RESULTS: 5 quantified accomplishments.\n\nWrite at C-suite peer level. No resume language.' + AI_VOICE_GUARDRAIL
     },
     {
       key: 'boardBio',
       label: 'Board Bio',
-      prompt: 'Based on the following Market Intelligence & Positioning output, write a board-facing executive biography (approximately 250 words).\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nRequirements:\n- Third-person voice\n- Opens with current/most recent role and headline achievement\n- Covers career arc in 2-3 sentences\n- Calls out board/governance/advisory experience if applicable\n- Notes education and credentials at the end\n- Board-appropriate, governance-oriented language\n- 250 words maximum\n- No resume structure — flowing prose'
+      prompt: 'Based on the following Market Intelligence & Positioning output, write a board-facing executive biography (approximately 250 words).\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nRequirements:\n- Third-person voice\n- Opens with current/most recent role and headline achievement\n- Covers career arc in 2-3 sentences\n- Calls out board/governance/advisory experience if applicable\n- Notes education and credentials at the end\n- Board-appropriate, governance-oriented language\n- 250 words maximum\n- No resume structure — flowing prose' + AI_VOICE_GUARDRAIL
     },
     {
       key: 'recruiterResume',
       label: 'Recruiter Resume',
-      prompt: 'Based on the following Market Intelligence & Positioning output, write a one-page recruiter-optimized executive summary (not a full resume — a targeted executive snapshot for search firm use).\n\nTarget Role: ' + targetRole + '\nIndustries: ' + industries + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat (one page / ~400 words):\nNAME (placeholder)\nTARGET ROLE | GEOGRAPHY\n\nEXECUTIVE SNAPSHOT (4 sentences): Positioning statement recruiters can use in a client pitch.\n\nCORE COMPETENCIES (6-8 keywords): ATS and recruiter-relevant terms from the market intelligence.\n\nCAREER HIGHLIGHTS (3-4 bullets): Most recent roles with quantified results.\n\nINDUSTRY & FUNCTIONAL EXPERTISE: 2-line list of sectors and functions.\n\nWrite as a direct-to-recruiter document — specific, scannable, no filler.'
+      prompt: 'Based on the following Market Intelligence & Positioning output, write a one-page recruiter-optimized executive summary (not a full resume — a targeted executive snapshot for search firm use).\n\nTarget Role: ' + targetRole + '\nIndustries: ' + industries + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nFormat (one page / ~400 words):\nNAME (placeholder)\nTARGET ROLE | GEOGRAPHY\n\nEXECUTIVE SNAPSHOT (4 sentences): Positioning statement recruiters can use in a client pitch.\n\nCORE COMPETENCIES (6-8 keywords): ATS and recruiter-relevant terms from the market intelligence.\n\nCAREER HIGHLIGHTS (3-4 bullets): Most recent roles with quantified results.\n\nINDUSTRY & FUNCTIONAL EXPERTISE: 2-line list of sectors and functions.\n\nWrite as a direct-to-recruiter document — specific, scannable, no filler.' + AI_VOICE_GUARDRAIL
     },
     {
       key: 'networkingIntro',
       label: 'Networking Introduction',
-      prompt: 'Based on the following Market Intelligence & Positioning output, write three versions of a Networking Introduction for this executive.\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nProduce three versions:\n\nVERSION 1 — 30-Second Verbal Introduction (~75 words): For networking events and introductory calls. Natural spoken language.\n\nVERSION 2 — LinkedIn Connection Request Note (under 300 characters): For cold outreach to peers and targets.\n\nVERSION 3 — Email Opening Paragraph (~100 words): For cold email introductions to decision-makers.\n\nAll versions: peer-to-peer tone, specific, no generic language, leads with value not job-seeking.'
+      prompt: 'Based on the following Market Intelligence & Positioning output, write three versions of a Networking Introduction for this executive.\n\nTarget Role: ' + targetRole + '\nMarket Intelligence Output:\n' + marketIntelOutput + '\n\nCareer Capital Summary:\n' + ccs + '\n\nProduce three versions:\n\nVERSION 1 — 30-Second Verbal Introduction (~75 words): For networking events and introductory calls. Natural spoken language.\n\nVERSION 2 — LinkedIn Connection Request Note (under 300 characters): For cold outreach to peers and targets.\n\nVERSION 3 — Email Opening Paragraph (~100 words): For cold email introductions to decision-makers.\n\nAll versions: peer-to-peer tone, specific, no generic language, leads with value not job-seeking.' + AI_VOICE_GUARDRAIL
     }
   ];
 
@@ -7626,6 +7655,183 @@ async function streamA7Doc(key, prompt, outEl) {
   } finally {
     clearTimeout(_a7dTimeout);
   }
+}
+
+// ════════════════════════════════════════════════════════
+// AGENT 9 — ON-DEMAND OPTIONAL DOCUMENTS
+// (Cover Letter, Impact Brief, Job Fit Analysis,
+//  Thank-You Messages, Leave-Behind, Rejection Recovery)
+// ════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
+// SHARED VOICE GUARDRAIL — applied to every Agent 7 and
+// Agent 9 document prompt so output reads like this specific
+// executive, not like an AI summarizing them.
+// ════════════════════════════════════════════════════════
+var AI_VOICE_GUARDRAIL = '\n\nVOICE — read before writing: Write like this specific executive actually talks, not like an AI summarizing them for a report. Vary sentence length on purpose \u2014 short sentences next to longer ones, not uniform rhythm throughout. Skip the throat-clearing opener; start with the actual point. Never use these words or phrases: leverage, robust, seamless(ly), dynamic, spearhead, cutting-edge, game-changer, in today\u2019s competitive/fast-paced landscape, proven track record, results-driven, synergy, unlock, elevate, foster, holistic, bandwidth, deep dive, best-in-class, thought leader, passionate about, trusted advisor, drive impact, deliver value, deliver results. Never use the construction "not just X \u2014 Y" or "not only X but also Y." Do not open two sentences in a row with the same word, and do not write three parallel bullets that all start with the same verb form.';
+
+var AGENT9_DOC_ITEMS = [
+  {key:'coverLetter',       label:'Cover Letter',          icon:'\u2709', contextLabel:'Job Description (Optional)',              contextHint:'Paste the specific job posting or JD. The cover letter will speak directly to its requirements instead of staying generic.'},
+  {key:'impactBrief',       label:'Impact Brief',          icon:'\u25B8', contextLabel:'Job Description (Optional)',              contextHint:'Paste the specific job posting or JD. The brief will map your value to the requirements it actually names.'},
+  {key:'jobFitAnalysis',    label:'Job Fit Analysis',      icon:'\u25C8', contextLabel:'Job Description (Optional)',              contextHint:'Paste the specific job posting or JD for an accurate fit analysis instead of one inferred from the target role alone.'},
+  {key:'thankYou',          label:'Thank-You Messages',    icon:'\u270E', contextLabel:'Interview Notes (Optional)',              contextHint:'What was actually discussed \u2014 topics, interviewer names, questions asked, anything you promised to follow up on. The notes will reference these specifics.'},
+  {key:'leaveBehind',       label:'Leave-Behind',          icon:'\u25A4', contextLabel:'Job Description (Optional)',              contextHint:'Paste the specific job posting or JD, if available, to sharpen the 90-day priorities.'},
+  {key:'rejectionRecovery', label:'Rejection Recovery',    icon:'\u21BB', contextLabel:'Interview / Rejection Details (Optional)',contextHint:'What you were told, who gave the feedback, what stage you reached. The recovery plan will use these specifics instead of generic language.'}
+];
+
+function renderAgent9DocPanel() {
+  var docs = STATE.agent9Docs || {};
+  var html = '<div class="auto-doc-suite" id="agent9-ondemand-suite">';
+  html += '<div class="auto-doc-banner">';
+  html += '<div class="auto-doc-banner-icon">\u2726</div>';
+  html += '<div class="auto-doc-banner-text">';
+  html += '<div class="auto-doc-banner-title">On-Demand Documents</div>';
+  html += '<div class="auto-doc-banner-desc">Optional documents for specific moments in the outreach process. Generate only the ones you need, when you need them \u2014 each draws on your Career Capital Summary and the details entered above.</div>';
+  html += '</div></div>';
+
+  AGENT9_DOC_ITEMS.forEach(function(it){
+    var isDone = !!docs[it.key];
+    var ctxVal = (STATE.savedInputs||{})['2_doc_'+it.key] || '';
+    html += '<div class="auto-doc-card" id="a9doc-card-'+it.key+'">';
+    html += '<div class="auto-doc-card-header" onclick="toggleA9DocCard(\''+it.key+'\')"><div class="auto-doc-card-title">';
+    html += '<span class="auto-doc-status-dot' + (isDone?' done':'') + '" id="a9dot-'+it.key+'"></span>';
+    html += it.icon + ' ' + it.label;
+    html += '<span id="a9doc-spinner-'+it.key+'" class="spinner dark" style="display:none;margin-left:4px"></span>';
+    html += '</div>';
+    html += '<div class="auto-doc-card-actions">';
+    if (isDone) {
+      html += '<button class="btn-action" onclick="event.stopPropagation();copyA9Doc(\''+it.key+'\')">\u2398 Copy</button>';
+      html += '<button class="btn-action" onclick="event.stopPropagation();dlA9Doc(\''+it.key+'\',\''+it.label.replace(/\s+/g,'_')+'\')">\u2193 .doc</button>';
+      html += '<button class="btn-action" onclick="event.stopPropagation();generateAgent9Doc(\''+it.key+'\')">\u21BB Regenerate</button>';
+    } else {
+      html += '<button class="btn-action" onclick="event.stopPropagation();generateAgent9Doc(\''+it.key+'\')">\u2726 Generate</button>';
+    }
+    html += '</div></div>';
+    html += '<div class="auto-doc-card-body open" id="a9doc-body-'+it.key+'">';
+    html += '<div class="auto-doc-context" style="padding:14px 18px 0 18px">';
+    html += '<div class="input-label" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px">'+it.contextLabel+'</div>';
+    html += '<div class="input-hint" style="margin-bottom:6px">'+it.contextHint+'</div>';
+    html += '<textarea id="a9ctx_'+it.key+'" rows="4" style="width:100%" onchange="autoSaveA9Context(\''+it.key+'\')" onblur="autoSaveA9Context(\''+it.key+'\')">'+escHtml(ctxVal)+'</textarea>';
+    html += '</div>';
+    html += '<div class="auto-doc-output" id="a9doc-out-'+it.key+'">';
+    html += isDone ? escHtml(docs[it.key]) : '<span style="color:var(--text-muted);font-style:italic">Not yet generated. Add context above if you have it, then click Generate.</span>';
+    html += '</div></div></div>';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function toggleA9DocCard(key) {
+  var body = document.getElementById('a9doc-body-'+key);
+  if (body) body.classList.toggle('open');
+}
+
+function autoSaveA9Context(key) {
+  var el = document.getElementById('a9ctx_' + key);
+  if (!el) return;
+  if (!STATE.savedInputs) STATE.savedInputs = {};
+  STATE.savedInputs['2_doc_' + key] = el.value;
+  saveState('input:2_doc_' + key);
+  var ck = '2_doc_' + key;
+  if (_autoSaveTimers[ck]) clearTimeout(_autoSaveTimers[ck]);
+  _autoSaveTimers[ck] = setTimeout(function(){ saveToCloud('a9_ctx_' + key, el.value); }, 1200);
+}
+
+function copyA9Doc(key) {
+  var t = (STATE.agent9Docs||{})[key] || '';
+  if (!t) { showToast('No content yet.'); return; }
+  var fallbackCopy = function(){
+    var ta = document.createElement('textarea'); ta.value = t;
+    ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Copied to clipboard.');
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(function(){ showToast('Copied to clipboard.'); }).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+}
+
+function dlA9Doc(key, filename) {
+  var t = (STATE.agent9Docs||{})[key] || '';
+  if (!t) { showToast('No content to download yet.'); return; }
+  downloadAsDoc(t, 'ExecEdge_Agent9_'+filename, filename.replace(/_/g,' ') + ' \u2014 ExecEdge AI\u2122');
+}
+
+function buildAgent9DocPrompt(key) {
+  var si = (STATE.savedInputs||{});
+  var ccs = si['2_ccs'] || STATE.savedOutputs['0'] || 'Not provided.';
+  var targetrole = si['2_targetrole'] || 'Not specified.';
+  var contact = si['2_contact'] || 'Not specified.';
+  var triggercontext = si['2_triggercontext'] || 'Not specified.';
+  var companysituation = si['2_companysituation'] || '';
+  var interviewstage = si['2_interviewstage'] || '';
+  var docContext = si['2_doc_' + key] || '';
+
+  switch(key) {
+    case 'coverLetter':
+      return 'Act as my Executive Cover Letter writer.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nContact / company: '+contact+'\nTrigger event or context: '+triggercontext+'\nCompany research notes: '+(companysituation||'Not provided.')+'\n\nJob Description:\n'+(docContext||'Not provided \u2014 write from the target role and company context above.')+'\n\nWrite a one-page executive cover letter. Peer-to-peer tone, not job-seeker language \u2014 written the way this executive would actually write to the specific person in the Contact field above (a recruiter, a hiring executive, or a personal contact), not a generic template voice. If a job description is provided, speak directly to its specific requirements and priorities rather than staying generic. Reference the trigger event or context specifically. Lead with the business problem I solve, not a chronological history. Close with one clear, low-friction ask. No generic filler sentences ("I am excited to apply").' + AI_VOICE_GUARDRAIL;
+    case 'impactBrief':
+      return 'Act as my Executive Impact Brief writer.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nCompany / contact context: '+contact+'\nCompany situation: '+(companysituation||'Not provided.')+'\n\nJob Description:\n'+(docContext||'Not provided \u2014 write from the target role and company situation above.')+'\n\nWrite a two-page Executive Impact Brief.\n\nFormat:\nTITLE: [Name] \u2014 Executive Impact Brief\nSECTION 1 \u2014 THE EXECUTIVE (5-6 sentences)\nSECTION 2 \u2014 TRANSFORMATION RECORD (4-5 quantified bullets)\nSECTION 3 \u2014 WHAT I BUILD (3 bullets)\nSECTION 4 \u2014 WHERE I ADD THE MOST VALUE AT THIS COMPANY (3 paragraphs, tied specifically to the company situation and, if provided, the named requirements in the job description)\nSECTION 5 \u2014 SELECTED RESULTS (5 quantified accomplishments)\n\nWrite at C-suite peer level, for a reader who is either a hiring executive or a search consultant. No resume language.' + AI_VOICE_GUARDRAIL;
+    case 'jobFitAnalysis':
+      return 'Act as my Job Fit Analysis Agent \u2014 a sharp, candid strategist talking directly to this executive, one on one, not a generic analysis engine.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nCompany / contact context: '+contact+'\nCompany situation: '+(companysituation||'Not provided.')+'\n\nJob Description:\n'+(docContext||'Not provided \u2014 infer likely requirements from the target role and company situation above.')+'\n\nThis is for the executive\u2019s own eyes, not an external audience \u2014 be direct and specific rather than diplomatic. Produce a candid Job Fit Analysis:\n1. Core requirements of this role \u2014 drawn directly from the job description if provided, otherwise inferred from the target role and company situation.\n2. Strongest points of fit (specific, evidence-based, drawn from the Career Capital Summary, mapped to the actual requirements above wherever possible).\n3. Honest gaps or stretch areas against those specific requirements, and how to address each if raised.\n4. Organizational / cultural fit considerations.\n5. Overall fit rating (Strong / Good / Stretch) with a one-paragraph rationale.\n6. Three talking points to emphasize in outreach and interviews based on this analysis.\n\nWrite each numbered section in real sentences and paragraphs, not clipped fragments \u2014 this should read like a strategist thinking out loud, not a checklist.' + AI_VOICE_GUARDRAIL;
+    case 'thankYou':
+      return 'Act as my Executive Thank-You Note writer.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nContact: '+contact+'\nInterview stage: '+(interviewstage||'Not specified.')+'\n\nInterview Notes:\n'+(docContext||'Not provided \u2014 write at a level of specificity that fits the interview stage and contact above.')+'\n\nWrite three thank-you message versions, addressed to the specific person in the Contact field above:\n1. Same-day email thank-you (under 150 words) \u2014 if interview notes are provided, reference the specific topics, questions, or moments from the conversation; otherwise keep it credible but general. Reinforce fit, one forward-looking line.\n2. Short LinkedIn note version (under 300 characters).\n3. A longer follow-up for a multi-interviewer panel \u2014 if interview notes name specific interviewers or topics, tailor one paragraph to reference the distinct points each of them raised.\n\nPeer-level tone throughout. No generic gratitude language.' + AI_VOICE_GUARDRAIL;
+    case 'leaveBehind':
+      return 'Act as my Executive Leave-Behind document writer.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nCompany situation: '+(companysituation||'Not provided.')+'\nInterview stage: '+(interviewstage||'Finalist stage.')+'\n\nJob Description:\n'+(docContext||'Not provided.')+'\n\nWrite a one-page finalist-stage leave-behind document, for a panel of interviewers and hiring executives to read after the conversation has ended. Include:\n1. A brief header restating the role and the executive\u2019s core value proposition.\n2. 3-4 bullets on the specific business priorities this company is facing, tied to the company situation and, if provided, the job description.\n3. A short "first 90 days" outline of priorities and early wins.\n4. 3 quantified proof points most relevant to this specific opportunity.\n\nOne page, board-appropriate, no resume formatting.' + AI_VOICE_GUARDRAIL;
+    case 'rejectionRecovery':
+      return 'Act as my Rejection Recovery Strategist \u2014 a seasoned executive coach who has seen this before, talking directly to the client, calm and direct, no corporate boilerplate. This executive did not advance in a search process and needs a professional, relationship-preserving way to respond and recover momentum.\n\nCareer Capital Summary:\n'+ccs+'\nTarget role: '+targetrole+'\nContact: '+contact+'\nCompany situation: '+(companysituation||'Not provided.')+'\n\nInterview / Rejection Details:\n'+(docContext||'Not provided \u2014 write at a general level appropriate to a late-stage rejection.')+'\n\nProduce:\n1. A gracious, brief response to the rejection that preserves the relationship and keeps the door open (email version, under 120 words) \u2014 incorporate the specific details above (who delivered the news, what stage was reached, any feedback already given) where relevant.\n2. A short, professional script for requesting specific feedback on why another candidate was chosen, calibrated to what, if anything, was already shared.\n3. Guidance on the appropriate timeline and framing for staying on this contact\u2019s radar for future opportunities (e.g., a check-in message to send in 60-90 days).\n4. A brief reframe of what this process revealed \u2014 what to adjust, if anything, in positioning or targeting going forward, based on the Career Capital Summary and the details above.' + AI_VOICE_GUARDRAIL;
+    default:
+      return '';
+  }
+}
+
+async function generateAgent9Doc(key) {
+  var labelMap = {coverLetter:'Cover Letter',impactBrief:'Impact Brief',jobFitAnalysis:'Job Fit Analysis',thankYou:'Thank-You Messages',leaveBehind:'Leave-Behind',rejectionRecovery:'Rejection Recovery'};
+  var label = labelMap[key];
+  if (!label) return;
+  if (!STATE.savedOutputs || !STATE.savedOutputs['2']) {
+    showToast('Generate the main Agent 9 outreach output first.');
+    return;
+  }
+  if (!STATE.agent9Docs) STATE.agent9Docs = {};
+
+  var dotEl  = document.getElementById('a9dot-' + key);
+  var bodyEl = document.getElementById('a9doc-body-' + key);
+  var outEl  = document.getElementById('a9doc-out-'  + key);
+  var spinEl = document.getElementById('a9doc-spinner-' + key);
+  if (bodyEl) bodyEl.classList.add('open');
+  if (spinEl) spinEl.style.display = 'inline-block';
+  if (outEl)  { outEl.textContent = 'Generating\u2026'; outEl.style.fontStyle = 'italic'; outEl.style.color = 'var(--text-muted)'; }
+
+  var prompt = buildAgent9DocPrompt(key);
+  try {
+    var text = await streamA7Doc(key, prompt, outEl);
+    if (!text || !text.trim()) throw new Error('Empty response');
+    STATE.agent9Docs[key] = text;
+    saveState();
+    saveToCloud('agent9_' + key, text);
+    if (dotEl) dotEl.className = 'auto-doc-status-dot done';
+    if (outEl) { outEl.style.fontStyle = 'normal'; outEl.style.color = 'var(--text-primary)'; }
+    var cardEl = document.getElementById('a9doc-card-' + key);
+    if (cardEl) {
+      var actionsEl = cardEl.querySelector('.auto-doc-card-actions');
+      if (actionsEl) {
+        actionsEl.innerHTML = '<button class="btn-action" onclick="event.stopPropagation();copyA9Doc(\''+key+'\')">\u2398 Copy</button>'
+          + '<button class="btn-action" onclick="event.stopPropagation();dlA9Doc(\''+key+'\',\''+label.replace(/\s+/g,'_')+'\')">\u2193 .doc</button>'
+          + '<button class="btn-action" onclick="event.stopPropagation();generateAgent9Doc(\''+key+'\')">\u21BB Regenerate</button>';
+      }
+    }
+    showToast('\u2713 ' + label + ' generated.');
+  } catch(e) {
+    if (outEl) { outEl.textContent = 'Error generating this document: ' + e.message; outEl.style.color = 'var(--danger)'; }
+    if (dotEl) dotEl.className = 'auto-doc-status-dot';
+    console.error('A9 doc error:', key, e);
+    showToast('Document generation failed. Please try again.');
+  }
+  if (spinEl) spinEl.style.display = 'none';
 }
 
 // ════════════════════════════════════════════════════════
